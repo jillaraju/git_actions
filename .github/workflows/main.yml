@@ -1,0 +1,46 @@
+name: Build Job
+
+on: 
+  push:
+    branches: 
+      - main
+  # Uncomment below if you also want this workflow to run on pull requestshhhhh
+  # pull_request:
+  #   branches:
+  #     - main     
+
+permissions:
+  contents: read    
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+
+      - name: Maven Build
+        run: mvn install   # ✅ corrected command (was 'maven install')
+
+      - name: Upload build artifacts (WAR)
+        uses: actions/upload-artifact@v4 
+        with:
+          name: vprofile-app
+          path: target/*.war   # ✅ removed space after 'path'
+
+      - name: Notify if build fails 
+        if: failure()          # ✅ fixed spacing (no space after 'if')
+        run: echo "Build job failed"       # ✅ typo fixed
+
+  Testing:
+    runs-on: ubuntu-latest
+    needs: Build
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+
+      - name: Run tests on main branch
+        run: mvn test
+
+      - name: Checkstyle
+        run: mvn checkstyle:checkstyle
